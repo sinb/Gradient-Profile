@@ -4,13 +4,14 @@ function [GradProfile, GradProfileX, GradProfileCenterLoc] = nearstLinearInterp(
     [row_size, col_size] = size(Gmag);
 %     close all
 %% plot grid
-    figure
+    figure(1)
     fig = imshow(Gmag); hold on
 %     plot(repmat((1:col_size),2,1), [0, row_size], 'b-')
 %     plot([0, col_size], repmat((1:row_size),2,1), 'b-')
 %% divide points by their direction degree in order to draw line and do interpolation
-    range = 15; % line length
-
+    range = 10; % line length
+    left_count = 0;
+    right_count = 0;
         if Gdir(row, col) > 0 && Gdir(row, col) <= 45 ...
         || Gdir(row, col) >=135 && Gdir(row, col) < 180
             %% plot gradient direction line
@@ -49,9 +50,9 @@ function [GradProfile, GradProfileX, GradProfileCenterLoc] = nearstLinearInterp(
                 % go left
                 % every point should have to nearest grid point, unless
                 % they are grid point
-%                 if delta < 0.05
-%                     break;
-%                 end
+                if left_count >= range
+                    break;
+                end
                     if srtd(edgePoint_idx-i, 2) == fix(srtd(edgePoint_idx-i, 2)) ...
                     && srtd(edgePoint_idx-i, 1) == fix(srtd(edgePoint_idx-i, 1))
                         % grid point, no need to interpolation, append left
@@ -64,13 +65,15 @@ function [GradProfile, GradProfileX, GradProfileCenterLoc] = nearstLinearInterp(
                                 GradProfile = ...
                                 [Gmag(srtd(edgePoint_idx-i, 2), srtd(edgePoint_idx-i, 1)), GradProfile];
                                 GradProfileX = [srtd(edgePoint_idx-i, 1), GradProfileX];
+                                left_count = left_count + 1;
                             else
                                 break;
                             end
                         else
                             GradProfile = ...
                             [Gmag(srtd(edgePoint_idx-i, 2), srtd(edgePoint_idx-i, 1)), GradProfile];
-                            GradProfileX = [srtd(edgePoint_idx-i, 1), GradProfileX];                            
+                            GradProfileX = [srtd(edgePoint_idx-i, 1), GradProfileX]; 
+                            left_count = left_count + 1;
                         end                        
                     elseif srtd(edgePoint_idx-i, 1) == fix(srtd(edgePoint_idx-i, 1))
                             % need to do interpolation
@@ -86,13 +89,14 @@ function [GradProfile, GradProfileX, GradProfileCenterLoc] = nearstLinearInterp(
                                 if interpValue >= GradProfile(1) && interpValue ~= 0
                                     GradProfile = [interpValue, GradProfile];
                                     GradProfileX = [srtd(edgePoint_idx-i, 1), GradProfileX];
+                                    left_count = left_count + 1;
                                 else
                                     break;
                                 end
                             else
                                 GradProfile = [interpValue, GradProfile];
                                 GradProfileX = [srtd(edgePoint_idx-i, 1), GradProfileX];
-                                
+                                left_count = left_count + 1;                  
                             end
 
                     else %need to do interpolation, this point is on horizion line
@@ -106,13 +110,15 @@ function [GradProfile, GradProfileX, GradProfileCenterLoc] = nearstLinearInterp(
                         if interpValue >= 0.98*GradProfile(1)
                             if interpValue >= GradProfile(1) && interpValue ~= 0
                                 GradProfile = [interpValue, GradProfile];
-                                GradProfileX = [srtd(edgePoint_idx-i, 1), GradProfileX];                                
+                                GradProfileX = [srtd(edgePoint_idx-i, 1), GradProfileX];  
+                                left_count = left_count + 1;
                             else
                                 break;
                             end
                         else
                             GradProfile = [interpValue, GradProfile];
                             GradProfileX = [srtd(edgePoint_idx-i, 1), GradProfileX];
+                            left_count = left_count + 1;
                         end
 
                     end
@@ -122,9 +128,9 @@ function [GradProfile, GradProfileX, GradProfileCenterLoc] = nearstLinearInterp(
 %             delta = 1; % give delta to 1 for a new loop
             for i=1:length(srtd)-edgePoint_idx-1
                 % go right
-%                 if delta < 0.05
-%                     break;
-%                 end
+                if right_count >= range
+                    break;
+                end
                     if srtd(edgePoint_idx+i, 2) == fix(srtd(edgePoint_idx+i, 2)) ...
                     && srtd(edgePoint_idx+i, 1) == fix(srtd(edgePoint_idx+i, 1))
                         % grid point, no need to interpolation, append left
@@ -137,6 +143,7 @@ function [GradProfile, GradProfileX, GradProfileCenterLoc] = nearstLinearInterp(
                                     GradProfile = ...
                                     [GradProfile, interpValue];
                                     GradProfileX = [GradProfileX, srtd(edgePoint_idx+i, 1)];
+                                    right_count = right_count + 1;
                                 else
                                     break;
                                 end
@@ -144,6 +151,7 @@ function [GradProfile, GradProfileX, GradProfileCenterLoc] = nearstLinearInterp(
                                 GradProfile = ...
                                     [GradProfile, interpValue];
                                 GradProfileX = [GradProfileX, srtd(edgePoint_idx+i, 1)];
+                                right_count = right_count + 1;
                                 
                             end                          
 
@@ -161,12 +169,14 @@ function [GradProfile, GradProfileX, GradProfileCenterLoc] = nearstLinearInterp(
                                 if interpValue >= GradProfile(end) 
                                     GradProfile = [GradProfile, interpValue];
                                     GradProfileX = [GradProfileX, srtd(edgePoint_idx+i, 1)];
+                                    right_count = right_count + 1;
                                 else
                                     break;
                                 end
                             else
                                 GradProfile = [GradProfile, interpValue];
-                                GradProfileX = [GradProfileX, srtd(edgePoint_idx+i, 1)];         
+                                GradProfileX = [GradProfileX, srtd(edgePoint_idx+i, 1)]; 
+                                right_count = right_count + 1;
                             end                          
 
                     else % need to do interpolation, this point in on horizion line
@@ -180,12 +190,14 @@ function [GradProfile, GradProfileX, GradProfileCenterLoc] = nearstLinearInterp(
                                 if interpValue >= GradProfile(end) && interpValue ~= 0
                                     GradProfile = [GradProfile, interpValue];
                                     GradProfileX = [GradProfileX, srtd(edgePoint_idx+i, 1)];
+                                    right_count = right_count + 1;
                                 else
                                     break;
                                 end
                             else
                                 GradProfile = [GradProfile, interpValue];
                                 GradProfileX = [GradProfileX, srtd(edgePoint_idx+i, 1)];
+                                right_count = right_count + 1;
                                 
                             end                           
 
@@ -206,33 +218,43 @@ function [GradProfile, GradProfileX, GradProfileCenterLoc] = nearstLinearInterp(
             GradProfileX = col;
             % start from center, go left
             for i=1:col-1
+                if left_count >= range
+                    break;
+                end
                 interpValue = Gmag(row, col-i);
                 if interpValue >= 0.98*GradProfile(1) || interpValue == 0
                     if interpValue >= GradProfile(1) && interpValue ~= 0
                         GradProfile = [Gmag(row, col-i), GradProfile];
-                        GradProfileX = [col-i, GradProfileX];                        
+                        GradProfileX = [col-i, GradProfileX];  
+                        left_count = left_count + 1;
                     else
                         break;
                     end
                 else
                     GradProfile = [interpValue, GradProfile];
                     GradProfileX = [col-i, GradProfileX];
+                    left_count = left_count + 1;
                 end
             end
             GradProfileCenterLoc = length(GradProfile);
             % go right
             for i=1:length(Gmag)-col-1
+                if right_count >= range
+                    break;
+                end                
                 interpValue = Gmag(row, col+i);
                 if interpValue >= 0.98*GradProfile(end)  || interpValue == 0
                     if interpValue >= GradProfile(end)
                         GradProfile = [GradProfile, interpValue];
                         GradProfileX = [GradProfileX, col+i];
+                        right_count = right_count + 1;
                     else
                         break;
                     end
                 else
                     GradProfile = [GradProfile, interpValue];
                     GradProfileX = [GradProfileX, col+i];
+                    right_count = right_count + 1;
                 end
             end            
 
@@ -246,32 +268,42 @@ function [GradProfile, GradProfileX, GradProfileCenterLoc] = nearstLinearInterp(
                 GradProfileX = row; 
                % from center go up
                for i=1:row-1
+                if left_count >= range
+                    break;
+                end                   
                    interpValue = Gmag(row-i, col);
                    if interpValue >= 0.98*GradProfile(1)  || interpValue == 0
                        if interpValue >= GradProfile(1) && interpValue ~= 0
                            GradProfile = [Gmag(row-i, col), GradProfile];
                            GradProfileX = [row-i, GradProfileX];
+                           left_count = left_count + 1;
                        else
                            break
                        end
                    else
                        GradProfile = [Gmag(row-i, col), GradProfile];
                        GradProfileX = [row-i, GradProfileX];
+                       left_count = left_count + 1;
                    end
                    GradProfileCenterLoc = length(GradProfile);
                    % go down
                    for i=1:length(Gmag)-row-1
+                       if right_count >= range
+                           break;
+                       end
                        interpValue = Gmag(row+i, col);
                        if interpValue >= 0.98*GradProfile(end) || interpValue == 0
                            if interpValue >= GradProfile(end)
                                GradProfile = [GradProfile, interpValue];
                                GradProfileX = [GradProfileX, row+i];
+                               right_count = right_count + 1;
                            else
                                break;
                            end
                        else
                            GradProfile = [GradProfile, interpValue];
                            GradProfileX = [GradProfileX, row+i];
+                           right_count = right_count + 1;
                        end
                        
                    end
@@ -309,6 +341,9 @@ function [GradProfile, GradProfileX, GradProfileCenterLoc] = nearstLinearInterp(
             GradProfile = [Gmag(srtd(edgePoint_idx, 2), srtd(edgePoint_idx, 1))];
             GradProfileX = [srtd(edgePoint_idx, 1)];
             for i = 1:1:col-1
+                if left_count >= range
+                    break;
+                end                
                 % go left
                 % every point should have two nearest grid points, unless
                 % they are grid point
@@ -323,14 +358,16 @@ function [GradProfile, GradProfileX, GradProfileCenterLoc] = nearstLinearInterp(
                             if interpValue >= GradProfile(1) && interpValue ~= 0
                                 GradProfile = ...
                                 [interpValue, GradProfile];
-                                GradProfileX = [srtd(edgePoint_idx-i, 1), GradProfileX];                                
+                                GradProfileX = [srtd(edgePoint_idx-i, 1), GradProfileX]; 
+                                left_count = left_count + 1;
                             else
                                 break;
                             end
                         else
                             GradProfile = ...
                                 [interpValue, GradProfile];
-                            GradProfileX = [srtd(edgePoint_idx-i, 1), GradProfileX];                            
+                            GradProfileX = [srtd(edgePoint_idx-i, 1), GradProfileX]; 
+                            left_count = left_count + 1;
                         end
 
                     elseif srtd(edgePoint_idx-i, 1) == fix(srtd(edgePoint_idx-i, 1))
@@ -347,12 +384,14 @@ function [GradProfile, GradProfileX, GradProfileCenterLoc] = nearstLinearInterp(
                               if interpValue >= GradProfile(1) && interpValue ~= 0
                                   GradProfile = [interpValue, GradProfile];
                                   GradProfileX = [srtd(edgePoint_idx-i, 1), GradProfileX];
+                                  left_count = left_count + 1;
                               else
                                   break
                               end
                           else
                               GradProfile = [interpValue, GradProfile];
                               GradProfileX = [srtd(edgePoint_idx-i, 1), GradProfileX];
+                              left_count = left_count + 1;
                           end
 
                     else %need to do interpolation, this point in on horizion line
@@ -366,12 +405,14 @@ function [GradProfile, GradProfileX, GradProfileCenterLoc] = nearstLinearInterp(
                             if interpValue >= GradProfile(1) && interpValue ~= 0
                                 GradProfile = [interpValue, GradProfile];
                                 GradProfileX = [srtd(edgePoint_idx-i, 1), GradProfileX];
+                                left_count = left_count + 1;
                             else
                                 break;
                             end
                         else
                             GradProfile = [interpValue, GradProfile];
                             GradProfileX = [srtd(edgePoint_idx-i, 1), GradProfileX];
+                            left_count = left_count + 1;
                         end
                     end
             end
@@ -379,6 +420,9 @@ function [GradProfile, GradProfileX, GradProfileCenterLoc] = nearstLinearInterp(
             GradProfileCenterLoc = length(GradProfile);
             delta = 1; % give delta to 1 for a new loop
             for i=1:length(srtd)-edgePoint_idx-1
+                if right_count >= range
+                    break;
+                end                
                 % go right
                     if srtd(edgePoint_idx+i, 2) == fix(srtd(edgePoint_idx+i, 2)) ...
                     && srtd(edgePoint_idx+i, 1) == fix(srtd(edgePoint_idx+i, 1))
@@ -390,6 +434,7 @@ function [GradProfile, GradProfileX, GradProfileCenterLoc] = nearstLinearInterp(
                                 GradProfile = ...
                                     [GradProfile, interpValue];
                                 GradProfileX = [GradProfileX, srtd(edgePoint_idx+i, 1)];
+                                right_count = right_count + 1;
                             else
                                 break;
                             end
@@ -413,12 +458,14 @@ function [GradProfile, GradProfileX, GradProfileCenterLoc] = nearstLinearInterp(
                               if interpValue >= GradProfile(end)
                                   GradProfile = [GradProfile, interpValue];
                                   GradProfileX = [GradProfileX, srtd(edgePoint_idx+i, 1)];
+                                  right_count = right_count + 1;
                               else
                                   break;
                               end
                           else
                               GradProfile = [GradProfile, interpValue];
                               GradProfileX = [GradProfileX, srtd(edgePoint_idx+i, 1)];
+                              right_count = right_count + 1;
                           end
 
                     else %need to do interpolation, this point in on horizion line
@@ -432,12 +479,14 @@ function [GradProfile, GradProfileX, GradProfileCenterLoc] = nearstLinearInterp(
                             if interpValue >= GradProfile(end)
                                 GradProfile = [GradProfile, interpValue];
                                 GradProfileX = [GradProfileX, srtd(edgePoint_idx+i, 1)];
+                                right_count = right_count + 1;
                             else
                                 break;
                             end
                         else
                             GradProfile = [GradProfile, interpValue];
                             GradProfileX = [GradProfileX, srtd(edgePoint_idx+i, 1)];
+                            right_count = right_count + 1;
                         end
 
                     end
