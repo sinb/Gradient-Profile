@@ -1,6 +1,7 @@
+addpath ./canny
 close all;clear
-% load('circle.mat')
-I = imread('input.png');
+% load('images/fan.mat')
+I = imread('images/bird_input.png');
 I = im2double(I);
 gI = rgb2gray(I);
 % gI = I;
@@ -16,6 +17,7 @@ Gdir(find(Gdir < 0)) = Gdir(find(Gdir < 0)) + 180;
 %%
 eth=0.1; % thershold for canny edge detector
 edgeMap=edge(gI,'canny',eth,1);
+% edgeMap=canny(gI, 1, eth);
 % figure,imshow(edgeMap)
 %%
 idx=find(edgeMap~=0);
@@ -32,14 +34,14 @@ idx=find(edgeMap~=0);
 % hold off
 %%
 % plot(rows, cols, 'ro')
-range = 5;
+range = 4;
 %drawDirection(rows, cols, range, Gmag, Gdir)
-out = randseed(1);
+
 randIndex = randperm(length(rows));
 for index=1:1:length(rows)
 % for idx=5000:1:6000
     idx = randIndex(index)
-    [GradProfile, GradProfileX, GradProfileCenterLoc] = nearstLinearInterp(rows(idx), cols(idx), Gmag, Gdir);
+    [GradProfile, GradProfileX, GradProfileCenterLoc] = nearstLinearInterp(rows(idx), cols(idx), Gmag, Gdir, range);
     Gdir(rows(idx), cols(idx))
     figure, plot(GradProfileX,GradProfile, 'r-o'),hold on
     plot(GradProfileX(GradProfileCenterLoc), GradProfile(GradProfileCenterLoc), 'b*')

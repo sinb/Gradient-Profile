@@ -1,4 +1,4 @@
-function [GradProfile, GradProfileX, GradProfileCenterLoc] = nearstLinearInterp(row, col, Gmag, Gdir)
+function [GradProfile, GradProfileX, GradProfileCenterLoc] = nearstLinearInterp(row, col, Gmag, Gdir, range)
 % row, col is the location of the edge point
     GradProfile = [];
     [row_size, col_size] = size(Gmag);
@@ -9,7 +9,7 @@ function [GradProfile, GradProfileX, GradProfileCenterLoc] = nearstLinearInterp(
 %     plot(repmat((1:col_size),2,1), [0, row_size], 'b-')
 %     plot([0, col_size], repmat((1:row_size),2,1), 'b-')
 %% divide points by their direction degree in order to draw line and do interpolation
-    range = 10; % line length
+%     range = 10; % line length
     left_count = 0;
     right_count = 0;
         if Gdir(row, col) > 0 && Gdir(row, col) <= 45 ...
