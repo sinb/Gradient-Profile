@@ -1,6 +1,6 @@
-function drawDirection2(row, col, range, Gdir)
-%DRAWDIRECTION2 draw line which's degree is 0 or 180 (horizontal line)
- 
+function drawDirection1(row, col, range, Gdir)
+%DRAWDIRECTION1 draw line which's degree is (0, 45], [135, 180]
+
     x_near = (col-range:1:col+range);
     y_near = ones(size(x_near))*row;
     tanValue = tan(Gdir(row, col) *pi/180);

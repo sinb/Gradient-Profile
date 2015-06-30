@@ -1,7 +1,7 @@
 addpath ./canny
 close all;clear
 % load('images/fan.mat')
-I = imread('images/bird_input.png');
+I = imread('images/input.png');
 I = im2double(I);
 gI = rgb2gray(I);
 % gI = I;
@@ -34,7 +34,7 @@ idx=find(edgeMap~=0);
 % hold off
 %%
 % plot(rows, cols, 'ro')
-range = 4;
+range = 8;
 %drawDirection(rows, cols, range, Gmag, Gdir)
 
 randIndex = randperm(length(rows));
@@ -45,5 +45,5 @@ for index=1:1:length(rows)
     Gdir(rows(idx), cols(idx))
     figure, plot(GradProfileX,GradProfile, 'r-o'),hold on
     plot(GradProfileX(GradProfileCenterLoc), GradProfile(GradProfileCenterLoc), 'b*')
-    close all
+      close all
 end
